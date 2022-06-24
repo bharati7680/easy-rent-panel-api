@@ -20,6 +20,6 @@ router.use('/userproduct', userproductRouter)
 router.use('/useraddon', useraddonRouter)
 router.use('/user', userRouter)
 
-//router.use('/employee', authMiddleWare.authCheck, employeeRouter)
+
 
 module.exports = router;

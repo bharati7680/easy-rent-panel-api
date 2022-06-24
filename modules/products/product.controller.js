@@ -5,7 +5,16 @@ async function getProductList(req, res) {
 
     try {
         let productList = await knex.select('*').from('Products')
-        res.send(productList)
+
+        const resData = {
+            msg: "",
+            data: {
+                product: productList
+            }
+        }
+    
+        res.send(resData)
+
     } catch (error) {   
         res.send({
             error: true,
@@ -29,17 +38,29 @@ async function addProduct(req, res) {
         visible: visible
     }
 
-    let result = await knex('Products').insert(product)
+    try {
+        let result = await knex('Products').insert(product)
 
-    res.send({result: result})
+        const resData = {
+            msg: "Product added successfully",
+            data: {
+                product: result
+            }
+        }
+    
+        res.send(resData)
+
+    } catch (error) {   
+        res.send({
+            error: true,
+            msg: "Something went wrong"
+        })
+
+    }
+
 }
 
 async function updateProduct(req, res) {
-
-    console.log(req.body)
-
-   
-
 
     let id = parseInt(req.params.id)
     let name = req.body.name
@@ -55,35 +76,103 @@ async function updateProduct(req, res) {
         visible: visible
     }
 
-    let result = await knex('Products').update(product).where("id", id)
+    try{
+        let result = await knex('Products').update(product).where("id", id)
 
-    res.send({
-        "result": result
-    })
-}
+        const resData = {
+            msg: "Product updated successfully",
+            data: {
+                product: result
+            }
+        }
+    
+        res.send(resData)
+
+    } catch (error) {   
+        res.send({
+            error: true,
+            msg: "Something went wrong"
+        })
+
+    }
+
+    }
 
 async function getProductDetails(req, res) {
     let id = parseInt(req.params.id)
 
-    let result = await knex('Products').select("*").where("id", id)
+    try{
 
-    res.send({result: result})
+    let result = await knex('Products').select("*").where("id", id).first()
+
+    const resData = {
+        msg: "",
+        data: {
+            product: result
+        }
+    } 
+    res.send(resData)
+
+    } catch (error) {   
+        res.send({
+            error: true,
+            msg: "Something went wrong"
+        })
+
+}
+    
 }
 
-// async function deleteEmployee(req, res) {
+async function addProductAddonMapping(req, res) {
+    
+    let product_id = req.params.id
+    let addon_id = req.body.addon_id
+    
 
-//     let id = parseInt(req.params.id)
+    let productaddonmapping = {
+    
+        product_id: product_id,
+        addon_id: addon_id
+    }   
 
-//     let result = await knex('Employee').delete().where('emp_id', id)
+    let existingMapping = await knex('AddonProductMapping').select("*").where("product_id", product_id).andWhere("addon_id", addon_id).first()
 
-//     res.send({result: result})
+    if (existingMapping){
+        res.status(400).send({
+            msg:"addon is already mapped"
+        })
+        return;
+    }
 
-// }
+    let result = await knex('AddonProductMapping').insert(productaddonmapping)
+
+    res.send({result: result})
+
+}
+
+
+
+
+
+async function deleteAddonProductMapping(req, res) {
+
+    let product_id = parseInt(req.params.id)
+
+    let addon_id = req.body.addon_id
+
+
+
+    let result = await knex('AddonProductMapping').delete().where('product_id', product_id).andWhere("addon_id", addon_id)
+
+    res.send({result: result})
+
+}
 
 module.exports = {
     getProductList,
     addProduct,
     updateProduct,
     getProductDetails,
-    //deleteEmployee
+    addProductAddonMapping,  
+    deleteAddonProductMapping
 }
